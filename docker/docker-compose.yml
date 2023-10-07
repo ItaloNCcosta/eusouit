@@ -1,0 +1,55 @@
+version: "3"
+services:
+    application:
+        build: .
+        container_name: eusouit-app
+        depends_on:
+            - database
+        hostname: application
+        links:
+            - "database:database"
+        ports:
+            - "8000:80"
+        networks:
+            - app-env
+        volumes:
+            - ./../src:/var/www:cached
+            - ./apache/vhost.txt:/etc/apache2/sites-enabled/docker-php.conf:cached
+            - ./php/xdebug.ini:/etc/php/8.2/mods-available/xdebug.ini:cached
+            - ./php/cli/php.ini:/etc/php/8.2/cli/php.ini:cached
+            # - ./php/fpm/php.ini:/etc/php/8.2/fpm/php.ini:cached
+    database:
+        image: mysql/mysql-server:8.0
+        container_name: eusouit-db
+        environment:
+            - MYSQL_DATABASE=laravel
+            - MYSQL_USER=laravel
+            - MYSQL_PASSWORD=password
+            - MYSQL_ROOT_PASSWORD=password
+            - MYSQL_ROOT_HOST=%
+        ports:
+            - "3306:3306"
+        networks:
+            - app-env
+        hostname: database
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: eusouit-phpmyadmin
+        ports:
+            -   "8080:80"
+        networks:
+            - app-env
+        environment:
+            - "PMA_HOST=database"
+            - "PMA_USER=root"
+            - "PMA_PASSWORD=password"
+    # mailhog:
+    #     image: mailhog/mailhog
+    #     ports:
+    #         - "1025:1025"
+    #         - "8025:8025"
+    #     networks:
+    #         - app-env
+
+networks:
+    app-env:
